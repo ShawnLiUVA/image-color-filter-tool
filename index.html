@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Color Filter Tool</title>
+    <title>Image Color Tool</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -17,8 +17,8 @@
 </head>
 <body>
 
-<h1>Image Color Filter Tool</h1>
-<p>Select an image and apply a color filter:</p>
+<h1>Image Color Tool</h1>
+<p>Select an image and change the color of non-white objects:</p>
 
 <!-- File Upload -->
 <input type="file" id="uploadImage" accept="image/*">
@@ -29,7 +29,7 @@
     <option value="green">Green</option>
     <option value="blue">Blue</option>
     <option value="gray">Gray</option>
-    <option value="black">Black</option> <!-- New option for Black -->
+    <option value="black">Black</option>
 </select>
 
 <!-- Apply Filter Button -->
@@ -59,35 +59,46 @@
         reader.readAsDataURL(e.target.files[0]);
     });
 
-    // Apply color filter to the canvas
+    // Helper function to determine if a pixel is close to white
+    function isWhitePixel(r, g, b, tolerance = 200) {
+        return r > tolerance && g > tolerance && b > tolerance;
+    }
+
+    // Apply color filter to the canvas, but only to non-white pixels
     function applyFilter() {
         let color = document.getElementById('colorSelect').value;
         let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         let data = imageData.data;
 
-        // Loop through the pixels and apply the color filter
+        // Define color channels for the selected color
+        let targetR = 0, targetG = 0, targetB = 0;
+        if (color === 'red') {
+            targetR = 255;
+        } else if (color === 'green') {
+            targetG = 255;
+        } else if (color === 'blue') {
+            targetB = 255;
+        } else if (color === 'gray') {
+            targetR = targetG = targetB = 128; // Middle gray
+        } else if (color === 'black') {
+            targetR = targetG = targetB = 0; // Black
+        }
+
+        // Loop through the pixels and apply the color to non-white pixels
         for (let i = 0; i < data.length; i += 4) {
-            if (color === 'red') {
-                data[i] = 255;  // Red channel
-                data[i + 1] = 0;  // Green channel
-                data[i + 2] = 0;  // Blue channel
-            } else if (color === 'green') {
-                data[i] = 0;
-                data[i + 1] = 255;
-                data[i + 2] = 0;
-            } else if (color === 'blue') {
-                data[i] = 0;
-                data[i + 1] = 0;
-                data[i + 2] = 255;
-            } else if (color === 'gray') {
-                let gray = 0.3 * data[i] + 0.59 * data[i + 1] + 0.11 * data[i + 2];
-                data[i] = data[i + 1] = data[i + 2] = gray; // Grayscale conversion
-            } else if (color === 'black') {
-                data[i] = 0;  // Black channel (set to 0)
-                data[i + 1] = 0;
-                data[i + 2] = 0;
+            let r = data[i];     // Red channel
+            let g = data[i + 1]; // Green channel
+            let b = data[i + 2]; // Blue channel
+
+            // Only change the color if the pixel is not white or close to white
+            if (!isWhitePixel(r, g, b)) {
+                data[i] = targetR;     // Set Red
+                data[i + 1] = targetG; // Set Green
+                data[i + 2] = targetB; // Set Blue
             }
         }
+
+        // Update the canvas with the modified image data
         ctx.putImageData(imageData, 0, 0);
     }
 </script>
