@@ -29,6 +29,7 @@
     <option value="green">Green</option>
     <option value="blue">Blue</option>
     <option value="gray">Gray</option>
+    <option value="black">Black</option> <!-- New option for Black -->
 </select>
 
 <!-- Apply Filter Button -->
@@ -80,7 +81,11 @@
                 data[i + 2] = 255;
             } else if (color === 'gray') {
                 let gray = 0.3 * data[i] + 0.59 * data[i + 1] + 0.11 * data[i + 2];
-                data[i] = data[i + 1] = data[i + 2] = gray;
+                data[i] = data[i + 1] = data[i + 2] = gray; // Grayscale conversion
+            } else if (color === 'black') {
+                data[i] = 0;  // Black channel (set to 0)
+                data[i + 1] = 0;
+                data[i + 2] = 0;
             }
         }
         ctx.putImageData(imageData, 0, 0);
