@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Color Filter Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+        canvas {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Image Color Filter Tool</h1>
+<p>Select an image and apply a color filter:</p>
+
+<!-- File Upload -->
+<input type="file" id="uploadImage" accept="image/*">
+
+<!-- Color Filter Options -->
+<select id="colorSelect">
+    <option value="red">Red</option>
+    <option value="green">Green</option>
+    <option value="blue">Blue</option>
+    <option value="gray">Gray</option>
+</select>
+
+<!-- Apply Filter Button -->
+<button onclick="applyFilter()">Apply Filter</button>
+
+<br><br>
+
+<!-- Canvas for Displaying the Image -->
+<canvas id="imageCanvas"></canvas>
+
+<script>
+    let canvas = document.getElementById('imageCanvas');
+    let ctx = canvas.getContext('2d');
+    let image = new Image();
+
+    // Load the uploaded image onto the canvas
+    document.getElementById('uploadImage').addEventListener('change', function (e) {
+        let reader = new FileReader();
+        reader.onload = function (event) {
+            image.onload = function () {
+                canvas.width = image.width;
+                canvas.height = image.height;
+                ctx.drawImage(image, 0, 0);
+            };
+            image.src = event.target.result;
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    });
+
+    // Apply color filter to the canvas
+    function applyFilter() {
+        let color = document.getElementById('colorSelect').value;
+        let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let data = imageData.data;
+
+        // Loop through the pixels and apply the color filter
+        for (let i = 0; i < data.length; i += 4) {
+            if (color === 'red') {
+                data[i] = 255;  // Red channel
+                data[i + 1] = 0;  // Green channel
+                data[i + 2] = 0;  // Blue channel
+            } else if (color === 'green') {
+                data[i] = 0;
+                data[i + 1] = 255;
+                data[i + 2] = 0;
+            } else if (color === 'blue') {
+                data[i] = 0;
+                data[i + 1] = 0;
+                data[i + 2] = 255;
+            } else if (color === 'gray') {
+                let gray = 0.3 * data[i] + 0.59 * data[i + 1] + 0.11 * data[i + 2];
+                data[i] = data[i + 1] = data[i + 2] = gray;
+            }
+        }
+        ctx.putImageData(imageData, 0, 0);
+    }
+</script>
+
+</body>
+</html>
